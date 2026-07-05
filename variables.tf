@@ -21,3 +21,9 @@ variable "cluster_version" {
   type        = string
   default     = "1.29"
 }
+
+variable "cluster_endpoint_public_access_cidrs" {
+  description = "CIDRs allowed to reach the public EKS API endpoint. Restrict before real deployment."
+  type        = list(string)
+  default     = ["0.0.0.0/0"]
+}

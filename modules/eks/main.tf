@@ -1,3 +1,14 @@
+resource "aws_kms_key" "eks" {
+  description             = "KMS key for ${var.cluster_name} EKS secrets envelope encryption"
+  deletion_window_in_days = 30
+  enable_key_rotation     = true
+}
+
+resource "aws_kms_alias" "eks" {
+  name          = "alias/${var.cluster_name}-eks-secrets"
+  target_key_id = aws_kms_key.eks.key_id
+}
+
 resource "aws_iam_role" "cluster" {
   name = "${var.cluster_name}-eks-cluster-role"
 
@@ -24,8 +35,20 @@ resource "aws_eks_cluster" "this" {
   version  = var.cluster_version
 
   vpc_config {
-    subnet_ids = var.subnet_ids
+    subnet_ids              = var.subnet_ids
+    endpoint_private_access = var.cluster_endpoint_private_access
+    endpoint_public_access  = var.cluster_endpoint_public_access
+    public_access_cidrs     = var.cluster_endpoint_public_access_cidrs
   }
+
+  encryption_config {
+    provider {
+      key_arn = aws_kms_key.eks.arn
+    }
+    resources = ["secrets"]
+  }
+
+  enabled_cluster_log_types = var.enabled_cluster_log_types
 
   depends_on = [aws_iam_role_policy_attachment.cluster_policy]
 }

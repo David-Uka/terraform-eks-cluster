@@ -9,3 +9,7 @@ output "cluster_endpoint" {
 output "oidc_provider_arn" {
   value = aws_iam_openid_connect_provider.eks.arn
 }
+
+output "cluster_kms_key_arn" {
+  value = aws_kms_key.eks.arn
+}
